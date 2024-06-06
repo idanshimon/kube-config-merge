@@ -18,6 +18,6 @@ This script helps manage Kubernetes configuration files (`kubeconfig` files) by 
 
 Clone the repository and install the dependencies:
 ```sh
-git clone https://github.com/idanshimon/kmerge.git
+git clone hhttps://github.com/idanshimon/kube-config-merge.git
 cd kmerge
 pip install -r requirements.txt
