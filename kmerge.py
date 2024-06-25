@@ -60,12 +60,15 @@ def merge_configs(existing_config, new_config_path):
     """
     with open(new_config_path, 'r') as file:
         new_config = yaml.safe_load(file)
+        changes_made = False
     for key in ['clusters', 'contexts', 'users']:
         if key in new_config:
             existing_names = {item['name'] for item in existing_config.get(key, [])}
             new_items = [item for item in new_config[key] if item['name'] not in existing_names]
-            existing_config[key] = existing_config.get(key, []) + new_items
-    return existing_config
+            if new_items:
+                existing_config[key] = existing_config.get(key, []) + new_items
+                changes_made = True
+    return existing_config, changes_made
 
 def delete_cluster(config, cluster_name):
     """
@@ -78,12 +81,13 @@ def delete_cluster(config, cluster_name):
     Returns:
     dict: The updated configuration without the specified cluster.
     """
+    initial_count = len(config['clusters'])
     config['clusters'] = [cluster for cluster in config.get('clusters', []) if cluster['name'] != cluster_name]
     config['contexts'] = [context for context in config.get('contexts', []) if context['context']['cluster'] != cluster_name]
     config['users'] = [user for user in config.get('users', []) if user['name'] != cluster_name]
     if config.get('current-context', '') == cluster_name:
         config['current-context'] = ''
-    return config
+    return config, len(config['clusters']) != initial_count
 
 def delete_user(config, username):
     """
@@ -96,9 +100,10 @@ def delete_user(config, username):
     Returns:
     dict: The updated configuration without the specified user.
     """
+    initial_count = len(config['users'])
     users = config.get('users', [])
     config['users'] = [user for user in users if user['name'] != username]
-    return config
+    return config, len(config['users']) != initial_count
 
 def list_users(config):
     """
@@ -162,17 +167,21 @@ def main():
         backup_config(args.config)
 
     config = load_config(args.config)
-    
+    changes_made = False
+
     if args.merge:
-        config = merge_configs(config, args.merge)
+        config, changed = merge_configs(config, args.merge)
+        changes_made = changes_made or changed
         print(f"Merged configurations from {args.merge}")
     
     if args.delete_cluster:
-        config = delete_cluster(config, args.delete_cluster)
+        config, changed = delete_cluster(config, args.delete_cluster)
+        changes_made = changes_made or changed
         print(f"Deleted cluster {args.delete_cluster}")
 
     if args.delete_user:
-        config = delete_user(config, args.delete_user)
+        config, changed = delete_user(config, args.delete_user)
+        changes_made = changes_made or changed
         print(f"Deleted user {args.delete_user}")
 
     if args.list_users:
@@ -193,7 +202,8 @@ def main():
         for cluster in clusters:
             print(cluster)
 
-    save_config(config, args.config)
+    if changes_made:
+        save_config(config, args.config)
 
 if __name__ == '__main__':
     main()
