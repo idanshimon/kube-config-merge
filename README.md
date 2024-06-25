@@ -23,6 +23,14 @@ cd kube-config-merge
 pip install -r requirements.txt
 ```
 
+ Run the installation script to add `kmerge` to your PATH:
+```sh
+chmod +x install.sh
+sudo ./install.sh
+```
+
+This will make `kmerge` available as a system-wide command.
+
 ## Usage
 Run the script with the appropriate arguments:
 
