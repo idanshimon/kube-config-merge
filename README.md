@@ -93,3 +93,8 @@ cluster3
 ---
 
 Thank you for using `kmerge`! If you have any questions, feedback, or contributions, feel free to reach out or open an issue on GitHub. Happy managing!
+
+
+# Author
+Idan Shimon
+
